@@ -18,7 +18,7 @@ async function getSession(userId, phoneNumber) {
   const messages = await prisma.message.findMany({
     where: { userId, fromPhone: phoneNumber },
     orderBy: { timestamp: 'desc' },
-    take: 20
+    take: 6
   });
   return {
     ...session,

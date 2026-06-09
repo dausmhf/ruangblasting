@@ -106,7 +106,9 @@ async function processIncoming(userId, from, message, messageId) {
       model: settings.geminiModel,
       phoneNumber: from,
       userMessage: message,
-      chatHistory: session.chatHistory
+      chatHistory: session.chatHistory,
+      storeName: settings.storeName,
+      botName: settings.botName
     });
     await sendMessage(settings.starsenderApiKey, from, reply);
     await prisma.$transaction([

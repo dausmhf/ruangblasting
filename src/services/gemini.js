@@ -3,6 +3,9 @@ const logger = require('../utils/logger');
 const { getSystemPrompt } = require('../data/prompts');
 const { searchKnowledge } = require('./knowledge');
 
+const MAX_HISTORY_CHARS = 1800;
+const MAX_KNOWLEDGE_CHARS = 1200;
+
 function createClient(apiKey, vertexai = false) {
   return new GoogleGenAI(vertexai ? { vertexai: true, apiKey } : { apiKey });
 }
@@ -22,24 +25,63 @@ async function generateContent(apiKey, request) {
   }
 }
 
-async function generateResponse({ userId, apiKey, model, phoneNumber, userMessage, chatHistory = [] }) {
+function compactHistory(chatHistory, userMessage) {
+  const normalizedMessage = String(userMessage || '').trim();
+  const result = [];
+  let usedChars = 0;
+
+  for (const item of chatHistory.slice().reverse()) {
+    const text = String(item?.parts?.[0]?.text || '').trim();
+    if (!text || (result.length === 0 && item.role === 'user' && text === normalizedMessage)) continue;
+    const clipped = text.slice(0, 600);
+    if (usedChars + clipped.length > MAX_HISTORY_CHARS) break;
+    result.unshift({ role: item.role, parts: [{ text: clipped }] });
+    usedChars += clipped.length;
+  }
+
+  return [...result, { role: 'user', parts: [{ text: normalizedMessage.slice(0, 1200) }] }];
+}
+
+function formatKnowledge(items) {
+  let usedChars = 0;
+  return items.map((item) => {
+    const product = item.productName ? `Produk: ${item.productName}\n` : '';
+    const link = item.productLink ? `Link: ${item.productLink}\n` : '';
+    const text = `${item.title}\n${product}${link}${item.content}`.trim();
+    const remaining = MAX_KNOWLEDGE_CHARS - usedChars;
+    if (remaining <= 0) return '';
+    const clipped = text.slice(0, remaining);
+    usedChars += clipped.length;
+    return clipped;
+  }).filter(Boolean).join('\n---\n');
+}
+
+async function generateResponse({
+  userId, apiKey, model, phoneNumber, userMessage, chatHistory = [], storeName, botName
+}) {
   if (!apiKey) throw new Error('Gemini API key belum dikonfigurasi');
   const relevantKnowledge = await searchKnowledge(userId, userMessage);
-  let systemPrompt = getSystemPrompt();
+  let systemPrompt = getSystemPrompt({ storeName, botName });
   if (relevantKnowledge.length) {
-    systemPrompt += `\n\nKONTEKS TOKO:\n${relevantKnowledge.map((item) => `${item.title}\n${item.content}`).join('\n\n')}`;
+    systemPrompt += `\n\nKONTEKS:\n${formatKnowledge(relevantKnowledge)}`;
   }
-  const contents = [
-    ...chatHistory,
-    { role: 'user', parts: [{ text: userMessage }] }
-  ];
+  const contents = compactHistory(chatHistory, userMessage);
   const response = await generateContent(apiKey, {
     model: model || 'gemini-2.5-flash',
     contents,
-    config: { systemInstruction: systemPrompt, temperature: 0.6, topP: 0.9, maxOutputTokens: 1024 }
+    config: {
+      systemInstruction: systemPrompt,
+      temperature: 0.5,
+      topP: 0.9,
+      maxOutputTokens: 320,
+      thinkingConfig: { thinkingBudget: 0 }
+    }
   });
   if (!response.text) throw new Error('Gemini mengembalikan respons kosong');
-  logger.success(`Gemini merespons ${phoneNumber} (${response.text.length} karakter)`);
+  const usage = response.usageMetadata || {};
+  logger.success(
+    `Gemini merespons ${phoneNumber} (${response.text.length} karakter, input ${usage.promptTokenCount || '?'} token, output ${usage.candidatesTokenCount || '?'} token)`
+  );
   return response.text;
 }
 
@@ -53,4 +95,4 @@ async function testConnection(apiKey, model = 'gemini-2.5-flash') {
   }
 }
 
-module.exports = { generateResponse, testConnection };
+module.exports = { generateResponse, testConnection, compactHistory, formatKnowledge };

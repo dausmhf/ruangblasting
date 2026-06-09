@@ -56,8 +56,10 @@ async function deleteKnowledge(userId, id) {
   return true;
 }
 
-async function searchKnowledge(userId, query, limit = 4) {
-  const words = String(query || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter((word) => word.length > 2);
+async function searchKnowledge(userId, query, limit = 2) {
+  const stopWords = new Set(['ada', 'aku', 'apa', 'bisa', 'buat', 'dan', 'dari', 'dong', 'gimana', 'ini', 'itu', 'kak', 'mau', 'saya', 'untuk', 'yang']);
+  const words = String(query || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/)
+    .filter((word) => word.length > 2 && !stopWords.has(word));
   if (!words.length) return [];
   const list = await getKnowledge(userId);
   return list.map((item) => {
