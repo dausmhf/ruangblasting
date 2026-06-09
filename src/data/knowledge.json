@@ -1,0 +1,45 @@
+[
+  {
+    "id": "1",
+    "title": "Jam Operasional Toko",
+    "tags": [
+      "jam",
+      "buka",
+      "tutup",
+      "operasional",
+      "jadwal",
+      "hari"
+    ],
+    "content": "Toko kami buka setiap hari (Senin - Minggu) mulai pukul 08.00 WIB hingga 22.00 WIB. Pemesanan di luar jam tersebut akan diproses pada keesokan harinya mulai pukul 08.00 WIB.",
+    "createdAt": "2026-06-04T08:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "title": "Kebijakan Garansi & Refund",
+    "tags": [
+      "garansi",
+      "refund",
+      "kembali",
+      "uang",
+      "gagal",
+      "klaim",
+      "salah",
+      "batal"
+    ],
+    "content": "Semua produk digital memiliki garansi pengiriman 100%. Jika dalam waktu 10 menit produk belum terkirim atau status transaksi gagal, silakan ajukan refund penuh. Caranya, ketik 'Hubungi Admin' untuk disambungkan dengan customer service kami.",
+    "createdAt": "2026-06-04T08:00:00.000Z"
+  },
+  {
+    "id": "1780537919521",
+    "title": "Panduan Diamond Mobile Legends",
+    "tags": [
+      "ml",
+      "diamond",
+      "mobile legends",
+      "voucher"
+    ],
+    "content": "Diamond ML-86 seharga Rp 19.000, ML-172 seharga Rp 38.000. Cara beli: berikan User ID dan Zone ID (contoh: 12345678 (1234)).",
+    "type": "product",
+    "createdAt": "2026-06-04T01:51:59.522Z"
+  }
+]

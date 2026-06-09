@@ -1,0 +1,17 @@
+node_modules/
+.env
+*.log
+logs/
+*.db
+*.db-journal
+uploads/*
+!uploads/.gitkeep
+src/public/uploads/*
+!src/public/uploads/.gitkeep
+!logs/.gitkeep
+dist/
+tools/
+.DS_Store
+Thumbs.db
+
+/src/generated/prisma
