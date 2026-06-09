@@ -29,7 +29,11 @@ app.use(express.json({ limit: '8mb' }));
 app.use(express.urlencoded({ limit: '8mb', extended: true }));
 app.use(optionalAuth);
 app.use('/webhook', webhookRouter);
-app.use(express.static(PUBLIC_DIR, { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 }));
+app.use(express.static(PUBLIC_DIR, {
+  maxAge: 0,
+  etag: true,
+  setHeaders: (res) => res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+}));
 
 function asyncRoute(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
